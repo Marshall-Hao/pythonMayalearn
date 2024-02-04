@@ -37,13 +37,24 @@ class SimpleCmd(om.MPxCommand):
             #self.displayInfo("1.0.0")
             self.setResult("1.0.0")
         else:
-            name = "SimpleCmd"
-            print('-------------------------------')
-            if arg_db.isFlagSet(SimpleCmd.NAME_FLAG[0]):
-                # get the user input string value
-                name = arg_db.flagArgumentString(SimpleCmd.NAME_FLAG[0],0)
-                
-            self.displayInfo("Hello {0}".format(name))
+            # name = "SimpleCmd"
+            # if arg_db.isFlagSet(SimpleCmd.NAME_FLAG[0]):
+            #     # get the user input string value
+            #     first_name = arg_db.flagArgumentString(SimpleCmd.NAME_FLAG[0],0)
+            #     last_name = arg_db.flagArgumentString(SimpleCmd.NAME_FLAG[0],1)
+            # try:
+            #     first_name = arg_db.commandArgumentString(0)
+            #     last_name = arg_db.commandArgumentInt(1)
+            # except:
+            #     first_name = "SimpleCmd"
+            #     last_name = ""
+            # self.displayInfo("Hello {0} {1}".format(first_name,last_name))
+            
+            selection_list = arg_db.getObjectList()
+            for i in range(selection_list.length()):
+                # ever obj in scene is a node yeah
+                depend_fn = om.MFnDependencyNode(selection_list.getDependNode(i))
+                print(depend_fn.name())
             
     def undoIt(self):
         pass
@@ -64,9 +75,15 @@ class SimpleCmd(om.MPxCommand):
         syntax = om.MSyntax()
 
         # Add flags here
-        syntax.addFlag(SimpleCmd.VERSION_FLAG[0],SimpleCmd.VERSION_FLAG[1])
-        syntax.addFlag(SimpleCmd.NAME_FLAG[0],SimpleCmd.NAME_FLAG[1],om.MSyntax.kString)
-
+        # syntax.addFlag(SimpleCmd.VERSION_FLAG[0],SimpleCmd.VERSION_FLAG[1])
+        # syntax.addFlag(SimpleCmd.NAME_FLAG[0],SimpleCmd.NAME_FLAG[1],(om.MSyntax.kString,om.MSyntax.kString))
+   
+        # syntax.addArg(om.MSyntax.kString)
+        # syntax.addArg(om.MSyntax.kUnsigned)
+        
+        syntax.setObjectType(om.MSyntax.kSelectionList,0,None)
+        syntax.useSelectionAsDefault(True)
+     
         return syntax
 
 
