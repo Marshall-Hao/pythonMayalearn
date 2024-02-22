@@ -4,4 +4,4 @@ import subprocess
 batch_file_path = 'E:\\launch_maya.bat'
 
 # Use subprocess to call the batch file with the corrected path
-subprocess.call(['cmd.exe', '/C', batch_file_path])
+subprocess.Popen(['cmd.exe', '/C', batch_file_path])
