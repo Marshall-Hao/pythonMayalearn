@@ -58,8 +58,8 @@ class ApplicationButtonWdg(QtWidgets.QWidget):
 
 class MayaLauncher(QtWidgets.QWidget):
 
-    MAYA_2022_PATH = "C:/Program Files/Autodesk/Maya2022/bin/maya.exe"
-    MAYA_2023_PATH = "C:/Program Files/Autodesk/Maya2023/bin/maya.exe"
+    MAYA_2024_PATH = "/mnt/e/maya/Maya2024/bin/maya.exe"
+    MAYA_2023_PATH = "/mnt/e/maya_2023/Maya2023/bin/maya.exe"
 
     EMPTY_SCENE = "<Empty Scene>"
 
@@ -77,11 +77,11 @@ class MayaLauncher(QtWidgets.QWidget):
         self.env_select_cmb = QtWidgets.QComboBox()
         self.env_select_cmb.addItems(["Stable", "Dev"])
 
-        self.maya_2022_btn = ApplicationButtonWdg("Maya 2022", MayaLauncher.MAYA_2022_PATH)
         self.maya_2023_btn = ApplicationButtonWdg("Maya 2023", MayaLauncher.MAYA_2023_PATH)
+        self.maya_2024_btn = ApplicationButtonWdg("Maya 2024", MayaLauncher.MAYA_2024_PATH)
 
         self.scene_select_cmb = QtWidgets.QComboBox()
-        self.scene_select_cmb.addItems([MayaLauncher.EMPTY_SCENE, "E:/maya_project/shapes.ma"])
+        self.scene_select_cmb.addItems([MayaLauncher.EMPTY_SCENE, "E:/maya_output/shapes.ma"])
         
     def create_layout(self):
         env_select_layout = QtWidgets.QHBoxLayout()
@@ -90,8 +90,8 @@ class MayaLauncher(QtWidgets.QWidget):
         env_select_layout.addWidget(self.env_select_cmb)
 
         maya_btn_layout = QtWidgets.QHBoxLayout()
-        maya_btn_layout.addWidget(self.maya_2022_btn)
         maya_btn_layout.addWidget(self.maya_2023_btn)
+        maya_btn_layout.addWidget(self.maya_2024_btn)
         maya_btn_layout.addStretch()
 
         scene_select_layout = QtWidgets.QVBoxLayout()
@@ -105,11 +105,48 @@ class MayaLauncher(QtWidgets.QWidget):
         main_layout.addStretch()
 
     def create_connections(self):
-        self.maya_2022_btn.clicked.connect(self.open_application)
         self.maya_2023_btn.clicked.connect(self.open_application)
+        self.maya_2024_btn.clicked.connect(self.open_application)
 
     def open_application(self, application_path):
         print("Opening Application: {0}".format(application_path))
+        
+        selected_env = ""
+        maya_args = []
+        
+        selected_env = self.env_select_cmb.currentText()
+        if selected_env == "Dev":
+            selected_env_path = "E:/Pythondev"
+        elif selected_env == "Stable":
+            selected_env_path = "E:/PythonStable"
+            
+        scene_path = self.scene_select_cmb.currentText()
+        if scene_path != MayaLauncher.EMPTY_SCENE:
+            maya_args = ["-file", scene_path]
+        
+        self.open_application_qt(application_path, selected_env_path, maya_args)
+    
+    def open_application_python(self, application_path, selected_env_path, maya_args):
+        maya_env = os.environ.copy()
+        maya_env["PYTHONPATH"] = selected_env_path
+
+        maya_args.insert(0, application_path)
+        
+        subprocess.Popen(maya_args,env=maya_env)  
+        
+        
+    def open_application_qt(self, application_path, selected_env_path, maya_args):
+        processing_enviroment = QtCore.QProcessEnvironment.systemEnvironment()
+        processing_enviroment.insert("PYTHONPATH",selected_env_path)
+        print(processing_enviroment.toStringList())
+        
+        process = QtCore.QProcess(self)
+        process.setProcessEnvironment(processing_enviroment)
+        process.setProgram(application_path)
+        process.setArguments(maya_args)
+        
+        process.startDetached()
+        
 
 
 if __name__ == "__main__":
